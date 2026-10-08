@@ -1,0 +1,456 @@
+{
+  "name": "Website Lead Auto-Reply (Template)",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Contact Us",
+        "formDescription": "Tell me a bit about what you need and I'll get back to you shortly.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "fieldName": "name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "fieldName": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What can I help with?",
+              "fieldType": "textarea",
+              "fieldName": "message",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Company",
+              "fieldName": "company"
+            },
+            {
+              "fieldLabel": "Service Interested In",
+              "fieldType": "dropdown",
+              "fieldName": "service",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Audit & Assurance"
+                  },
+                  {
+                    "option": "Tax"
+                  },
+                  {
+                    "option": "Advisory"
+                  },
+                  {
+                    "option": "Business Services & Outsourcing"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Marketing Consent (optional)",
+              "fieldType": "checkbox",
+              "fieldName": "marketingConsent",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes, I'd like to receive occasional emails about your services and updates"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldType": "html",
+              "html": "<p style=\"font-size: 0.85em; color: #666;\">Your data will be handled in line with our <a href=\"/privacy-policy\" target=\"_blank\">Privacy Policy</a>.</p>"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Submit",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "Thanks \u2014 I've got your message and will follow up soon."
+            }
+          }
+        }
+      },
+      "id": "f2d6d115-2dab-4846-aef2-6f350ca1658b",
+      "name": "Website Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -368,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=A new website form submission has come in.\nName: {{ $json.name }}\nEmail: {{ $json.email }}\nCompany: {{  $json.company }}\nService interested in: {{  $json.service }}\nTheir message: {{ $json.message }}\n\nDraft a reply email body (no subject line), and decide whether it's safe to send automatically or whether a team member should review it first.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are drafting an email reply on behalf of BDG, a mid-market accounting and consulting firm, to someone who filled out the firm's website contact form.\n\nWrite a warm, concise, professional reply in plain spoken sentences, not bullet points. Address the sender by name and respond directly to what they actually asked, nothing extra. Sign off as \"The BDG Team\".\n\nFormat the reply as short paragraphs, each separated by a blank line. Put the sign-off on its own line, separated from the body text by a blank line too.\n\nNever invent prices, fees, or availability. Never quote a fee, even a rough one. Never confirm or book a specific meeting time. Never name or promise a specific partner will handle it unless that's already known. Never state anything as fact that isn't in the business context below.\n\nBusiness context:\nBDG is a mid-market accounting and consulting firm with around 180 people across three offices: Dublin (HQ), Cork, and Belfast. BDG is part of an international network with member firms across Europe, so cross-border work is handled through those partner offices.\n\nServices: Audit & Assurance (statutory audits, group audits, assurance reviews), Tax (corporate tax compliance, cross-border tax structuring, VAT and indirect tax, personal tax), Advisory (M&A advisory, restructuring, valuations, forensic accounting), and Business Services & Outsourcing (outsourced finance and accounting functions, payroll, company secretarial, bookkeeping).\n\nSectors: manufacturing, logistics and transport, technology, retail and consumer, real estate, healthcare, financial services, agri-food.\n\nGeneral questions can be answered directly using the context above. Anything involving pricing, a specific date or time, or a new client engagement gets passed to a partner to follow up personally, rather than quoted or booked automatically.\n\nAlso decide needs_review:\n- Set needs_review to true if the question involves pricing or fees, a specific date or time, a request to speak with a named partner, or anything not covered in the business context above. In that case, the reply should say a partner will follow up personally, and should not guess or quote.\n- Set needs_review to false only when the business context above fully answers the question on its own, such as which sectors we cover, what services we offer, office locations, or how a new engagement generally starts."
+        }
+      },
+      "id": "b7b0c686-ef20-4e77-9273-0bc948e76525",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5",
+          "cachedResultName": "Claude Sonnet 5",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "id": "38abdf08-2afc-448f-9916-2506c91109c9",
+      "name": "Claude Sonnet 5",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        -144,
+        384
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"reply\": \"the drafted email body\",\n  \"needs_review\": true\n}",
+        "autoFix": true
+      },
+      "id": "084ed60b-0e59-412f-8e17-c7940104e7f2",
+      "name": "Reply Format",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.output.needs_review }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true,
+              "id": "2ba55fd4-5ac8-46a6-a93e-225589eebefa"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a11f5786-6cea-49e7-8805-3adc69fe78f9",
+      "name": "Needs Review?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=  Re: Your enquiry",
+        "message": "={{ $json.output.reply }}",
+        "options": {
+          "sendTo": "={{ $('Website Form').item.json.email }}"
+        }
+      },
+      "id": "0fb92ad9-726a-4f20-8fee-b5a6611083d4",
+      "name": "Save Draft Reply for Review",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        64
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 5) + 1 }}",
+        "unit": "minutes"
+      },
+      "id": "6f1ee533-89f8-4edc-84a3-6a81bf9364e6",
+      "name": "Human-like Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Website Form').item.json.email }}",
+        "subject": "=Re: Your enquiry",
+        "message": "={{ $json.output.reply }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "f8d4054b-fd4f-4001-9d4b-8a7982b229b4",
+      "name": "Send Auto-Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        256
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Email": "={{ $json.email }}",
+            "Message": "={{ $json.message }}",
+            "Date": "={{ $json.submittedAt.split('T')[0] }}",
+            "Company": "={{ $json.company }}",
+            "Service": "={{ $json.service }}",
+            "Marketing Consent": "={{ $json.marketingConsent && $json.marketingConsent.length ? 'Yes' : 'No' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Marketing Consent",
+              "displayName": "Marketing Consent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1d18ae5b-5025-4175-b1e4-4f63d396cc6f",
+      "name": "Append row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -80,
+        -144
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Website Form": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Needs Review?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Sonnet 5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Reply Format",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Format": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Review?": {
+      "main": [
+        [
+          {
+            "node": "Save Draft Reply for Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Human-like Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human-like Delay": {
+      "main": [
+        [
+          {
+            "node": "Send Auto-Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
